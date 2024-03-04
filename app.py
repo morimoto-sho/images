@@ -2,7 +2,9 @@ from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
 )
-from linebot.exceptions import InvalidSignatureError, LineBotApiError
+from linebot.exceptions import (
+    InvalidSignatureError
+)
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 )
@@ -13,12 +15,9 @@ app = Flask(__name__)
 line_bot_api = LineBotApi('YOUR_CHANNEL_ACCESS_TOKEN')
 handler = WebhookHandler('YOUR_CHANNEL_SECRET')
 
-# 模拟数据库或持久化存储，用于追踪每个用户的答案
-user_states = {}
-
 # 質問リスト
 questions = [
-        "あなたは新しい医療機器をすぐに使いこなせますか？",
+    "あなたは新しい医療機器をすぐに使いこなせますか？",
         "患者さんの心を温かく包み込むことができますか？",
         "どんな厳しい状況でもブレない強さを持っていますか？",
         "新人ナースとの橋渡し役として、知識を惜しみなく共有しますか？",
@@ -31,62 +30,51 @@ questions = [
         "あなたは今転職を考えていますか？",
         "あなたは今の職場に不満を感じていますか？",
 ]
+    # その他の質問を追加...
+]
 
-# 看護師のタイプを決定する関数
+# 各ユーザーの回答を追跡
+user_answers = {}
+
+# 看護師のタイプと想定年収
+# 各看護師のタイプに対応する想定年収
+nurse_types = {
+    "イノベーター看護師": "800万円",
+    "ハートフル看護師": "700万円",
+    "アイアン看護師": "850万円",
+    "ブリッジ看護師": "750万円",
+    "スカラー看護師": "900万円",
+    "エンデュランス看護師": "650万円",
+    "クイックレスポンス看護師": "800万円",
+    "アダプタブル看護師": "700万円",
+    "ビジョナリー看護師": "950万円",
+    "エキスパート看護師": "1000万円",
+}
+
 def determine_nurse_type(answers):
-    # スコア計算ロジック...
-    # この例では、単純に回答からランダムに選ぶ
-    import random
-    nurse_types = ["イノベーター看護師", "ハートフル看護師", "アイアン看護師", "ブリッジ看護師", "スカラー看護師"]
-    chosen_type = random.choice(nurse_types)
-    return chosen_type, "800万円"
+    scores = {key: 0 for key in nurse_types.keys()}
 
-@app.route("/callback", methods=['POST'])
-def callback():
-    signature = request.headers['X-Line-Signature']
-    body = request.get_data(as_text=True)
-    
-    try:
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        abort(400)
-    
-    return 'OK'
+    # 各質問に対する「はい」の回答で特定のタイプのスコアを増加
+    question_to_type = [
+        ("イノベーター看護師", "ハートフル看護師"),  # 1つ目の質問に対する影響
+        ("アイアン看護師", "ブリッジ看護師"),      # 2つ目の質問に対する影響
+        # 以下、質問ごとに影響する看護師タイプを追加
+    ]
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    user_id = event.source.user_id
-    message_text = event.message.text
+    for i, answer in enumerate(answers):
+        if answer == 'yes':
+            for nurse_type in question_to_type[min(i, len(question_to_type) - 1)]:
+                scores[nurse_type] += 1
 
-    # ユーザーの状態と回答を管理
-    if user_id not in user_states:
-        user_states[user_id] = {
-            "questions_answered": 0,
-            "answers": []
-        }
-    
-    # 回答を保存
-    user_states[user_id]["answers"].append(message_text)
-    user_states[user_id]["questions_answered"] += 1
-    
-    # 全ての質問に答えたかチェック
-    if user_states[user_id]["questions_answered"] == len(questions):
-        nurse_type, salary = determine_nurse_type(user_states[user_id]["answers"])
-        message = f"あなたの看護師タイプは「{nurse_type}」で、想定年収は{salary}です。"
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=message)
-        )
-        # ユーザーの状態をリセット
-        del user_states[user_id]
-    else:
-        # 次の質問を送る
-        next_question = questions[user_states[user_id]["questions_answered"]]
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=next_question)
-        )
+    # 最もスコアが高い看護師のタイプを決定
+    top_type = max(scores, key=scores.get)
+    return top_type, nurse_types[top_type]
 
-if __name__ == "__main__":
-    app.run()
+# 仮想のユーザー回答
+# 実際にはLINE Botからの入力を想定
+answers = ["yes", "no", "yes", "yes", "no"]
 
+# 看護師タイプと想定年収を決定
+nurse_type, salary = determine_nurse_type(answers)
+
+print(f"あなたの看護師タイプは「{nurse_type}」で、想定年収は{salary}です。")
