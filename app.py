@@ -60,9 +60,6 @@ def ask_question(reply_token, question):
     messages = TextSendMessage(text=question, quick_reply=QuickReply(items=quick_reply_items))
     line_bot_api.reply_message(reply_token, messages)
 
-    messages = TextSendMessage(text=question, quick_reply=QuickReply(items=quick_reply_items))
-    line_bot_api.reply_message(reply_token, messages)
-
 def process_answer(user_id, text, reply_token):
     state = user_states[user_id]
     state['answers'].append(text)
