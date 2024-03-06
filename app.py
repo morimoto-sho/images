@@ -27,6 +27,12 @@ additional_questions = [
 all_questions = mandatory_questions + additional_questions
 user_states = {}
 
+quick_reply_items = [
+    QuickReplyButton(action=MessageAction(label="はい", text="はい")),
+    QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ")),
+    QuickReplyButton(action=MessageAction(label="どちらでもない", text="どちらでもない"))
+]
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
