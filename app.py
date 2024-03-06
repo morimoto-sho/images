@@ -1,17 +1,21 @@
 from flask import Flask, request, abort
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
-import random
+from linebot import (
+    LineBotApi, WebhookHandler
+)
+from linebot.exceptions import (
+    InvalidSignatureError
+)
+from linebot.models import (
+    MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
+)
 
 app = Flask(__name__)
 
-# LINE Developersから取得したアクセストークンとシークレット
 line_bot_api = LineBotApi('9vhVHnOG2ySYldADpiacTQjwz4cEAEJW93dg3g/BCUGE8q4+WoEJfADJ1Oij0S/XDS6+PwaxHY4cCbxQcqcnSA1ragmegQJxcNax8qYXo51CiPPhWrvfzYFmIJAY7Ri9d7BO3uQLQdg/hXtYCq+bFgdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('3a6d6100f0621453f5477776424f4cfe')
 
-mandatory_questions = ["あなたは今転職を考えていますか？", "あなたは今の職場に不満を感じていますか？"]
-additional_questions = [
+
+questions = [
     "あなたは新しい医療機器をすぐに使いこなせますか？",
     "患者さんの心を温かく包み込むことができますか？",
     "どんな厳しい状況でもブレない強さを持っていますか？",
@@ -22,23 +26,18 @@ additional_questions = [
     "どんな状況にも柔軟に対応できますか？",
     "チームをまとめ、明確なビジョンのもとにリードできますか？",
     "特定の医療分野や技術において深い知識を持っていますか？",
+    # Add more questions
 ]
-
-all_questions = mandatory_questions + additional_questions
-user_states = {}
-
-quick_reply_items = [
-    QuickReplyButton(action=MessageAction(label="はい", text="はい")),
-    QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ")),
-    QuickReplyButton(action=MessageAction(label="どちらでもない", text="どちらでもない"))
-]
+# A dictionary to track the state and answers of each user
+user_sessions = {}
 
 @app.route("/callback", methods=['POST'])
 def callback():
+    # Get request body and signature
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
-
+    
+    # Handle request
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
@@ -49,44 +48,39 @@ def callback():
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text
-
-    if text == "診断開始":
-        selected_questions = random.sample(all_questions, max(0, 8 - len(mandatory_questions))) + mandatory_questions
-        user_states[user_id] = {'questions': selected_questions, 'answers': [], 'current_question': 0}
-        ask_question(event.reply_token, user_states[user_id]['questions'][0])
-    elif text in ["はい", "いいえ", "どちらでもない"] and user_id in user_states:
-        process_answer(user_id, text, event.reply_token)
-
-def ask_question(reply_token, question):
-    quick_reply_items = [
-        QuickReplyButton(action=MessageAction(label="はい", text="はい")),
-        QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ")),
-        QuickReplyButton(action=MessageAction(label="どちらでもない", text="どちらでもない"))
-    ]
-    messages = TextSendMessage(text=question, quick_reply=QuickReply(items=quick_reply_items))
-    line_bot_api.reply_message(reply_token, messages)
-
-def process_answer(user_id, text, reply_token):
-    state = user_states[user_id]
-    state['answers'].append(text)
     
-    # 以前の状態管理の誤りを修正
-    if state['current_question'] < len(state['questions']) - 1:
-        state['current_question'] += 1
-        ask_question(reply_token, state['questions'][state['current_question']])
-    else:
-        nurse_type = calculate_nurse_type(state['answers'])
-        display_result(reply_token, nurse_type)
-        del user_states[user_id]
+    # Start diagnosis
+    if text == "診断開始":
+        user_sessions[user_id] = {'current_question': 0, 'answers': []}
+        ask_question(user_id, 0, event.reply_token)
+        return
+    
+    # Handle answer and determine next step
+    if user_id in user_sessions:
+        session = user_sessions[user_id]
+        session['answers'].append(text)  # Store answer
+        next_question = session['current_question'] + 1
+        
+        if next_question < len(questions):
+            session['current_question'] = next_question
+            ask_question(user_id, next_question, event.reply_token)
+        else:
+            # All questions answered, determine result
+            result = determine_result(session['answers'])
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=result))
+            del user_sessions[user_id]  # Clear session
 
-def calculate_nurse_type(answers):
-    # 看護師タイプを計算するロジック
-    return "適切な看護師タイプ"
+def ask_question(user_id, question_index, reply_token):
+    question = questions[question_index]
+    quick_reply = QuickReply(items=[
+        QuickReplyButton(action=MessageAction(label="はい", text="はい")),
+        QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
+    ])
+    line_bot_api.reply_message(reply_token, TextSendMessage(text=question, quick_reply=quick_reply))
 
-def display_result(reply_token, nurse_type):
-    message = f"あなたの看護師タイプは「{nurse_type}」です。"
-    line_bot_api.reply_message(reply_token, TextSendMessage(text=message))
+def determine_result(answers):
+    # Logic to determine the result based on answers
+    return "Your nurse type is: XYZ"  # Placeholder result
 
 if __name__ == "__main__":
-    app.run(debug=True)  # デバッグモードを有効にする
-
+    app.run()
