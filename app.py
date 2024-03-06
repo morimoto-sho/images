@@ -49,10 +49,14 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text="Hello, this is a reply from your bot!")
-    )
+    text = event.message.text
+
+    if text == "診断開始":
+        start_diagnosis(event)
+
+def start_diagnosis(event):
+    # Implement logic to start the diagnosis by asking the first question
+    pass
 
 
 
