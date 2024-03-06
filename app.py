@@ -1,3 +1,5 @@
+import os
+import random
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
@@ -8,78 +10,54 @@ from linebot.exceptions import (
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 )
-import os
-import random
 
 app = Flask(__name__)
 
-# 環境変数からトークンとシークレットを取得
-line_bot_api = LineBotApi(os.environ['YOUR_CHANNEL_ACCESS_TOKEN'])
-handler = WebhookHandler(os.environ['YOUR_CHANNEL_SECRET'])
+# Use your LINE channel access token and channel secret
+line_bot_api = LineBotApi('YOUR_CHANNEL_ACCESS_TOKEN')
+handler = WebhookHandler('YOUR_CHANNEL_SECRET')
 
-# 質問リスト
-all_questions = [
-    # 必ず出題される質問
+# Nurse types and salary mapping
+nurse_types = ["マルチタイプ看護師", "イノベーター看護師", "ハートフル看護師", "アイアン看護師", "ブリッジ看護師", "スカラー看護師", "エンデュランス看護師", "クイックレスポンス看護師", "アダプタブル看護師", "ビジョナリー看護師", "エキスパート看護師"]
+salary_map = {
+    "マルチタイプ看護師": "900万円",
+    # Add other nurse types and their expected salaries here
+}
+
+# Sample questions
+questions = [
+    "あなたは新しい医療機器をすぐに使いこなせますか？",
+    "患者さんの心を温かく包み込むことができますか？",
+    "どんな厳しい状況でもブレない強さを持っていますか？",
+    "新人ナースとの橋渡し役として、知識を惜しみなく共有しますか？",
+    # Add more questions as needed
     "あなたは今転職を考えていますか？",
     "あなたは今の職場に不満を感じていますか？",
-    # ランダムに選ばれるその他の質問
-    "あなたは新しい医療技術に興味がありますか？",
-    "チームワークを大切にしますか？",
-    "患者さんの心のケアも大切だと思いますか？",
-    "リーダーシップを発揮することが得意ですか？",
-    # その他多数の質問をここに追加...
 ]
 
-# ユーザーの回答を管理する辞書
-user_answers = {}
-
+# This endpoint is called by LINE when a message is sent to the bot
 @app.route("/callback", methods=['POST'])
 def callback():
-    # 省略...
+    signature = request.headers['X-Line-Signature']
+    body = request.get_data(as_text=True)
+
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_id = event.source.user_id
-
-    if user_id not in user_answers:
-        # 初めてのユーザーであれば、初期化
-        user_answers[user_id] = {"answers": [], "current_question": 0, "questions": generate_questions()}
-
     text = event.message.text
-    user_data = user_answers[user_id]
 
     if text == "診断開始":
-        # 質問の初期化
-        user_data["answers"] = []
-        user_data["current_question"] = 0
-        user_data["questions"] = generate_questions()
-        send_question(event.reply_token, user_data["questions"][user_data["current_question"]])
-    elif text in ["はい", "いいえ"]:
-        user_data["answers"].append(text)
-        # 「マルチタイプ看護師」に該当するかのチェック
-        if user_data["current_question"] < 2 and text == "はい":
-            send_result(event.reply_token, "マルチタイプ看護師")
-            del user_answers[user_id]  # ユーザー情報を削除
-            return
-        # 次の質問へ
-        user_data["current_question"] += 1
-        if user_data["current_question"] < len(user_data["questions"]):
-            send_question(event.reply_token, user_data["questions"][user_data["current_question"]])
-        else:
-            # 全質問に回答したら結果を送信
-            nurse_type = determine_nurse_type(user_data["answers"])
-            send_result(event.reply_token, nurse_type)
-            del user_answers[user_id]  # ユーザー情報を削除
-    else:
-        # 不明なメッセージには何もしない
-        return
+        start_diagnosis(event)
 
-def generate_questions():
-    # 必ず出題される質問2つとランダムな質問18個を選択
-    selected_questions = random.sample(all_questions[2:], 18)
-    return all_questions[:2] + selected_questions
+def start_diagnosis(event):
+    # Implement logic to start the diagnosis by asking the first question
+    pass
 
-def send_question(reply_token, question_text):
-    # 省略...
-
-def determine_nurse_type(
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
