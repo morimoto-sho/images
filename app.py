@@ -80,10 +80,9 @@ def calculate_nurse_type(answers):
     else:
         return "マルチタイプ看護師"
 
-
 def display_result(reply_token, nurse_type):
     message = f"あなたの看護師タイプは「{nurse_type}」です。"
     line_bot_api.reply_message(reply_token, TextSendMessage(text=message))
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
     app.run()
