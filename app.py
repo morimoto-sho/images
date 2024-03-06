@@ -29,6 +29,16 @@ questions = [
     "あなたは今の職場に不満を感じていますか？",
 ]
 
+# 各質問に対する看護師タイプの対応関係
+question_nurse_type_mapping = {
+    0: {"はい": ["元気看護師"], "いいえ": ["マルチ看護師"]},
+    1: {"はい": ["マルチ看護師", "病み看護師"], "いいえ": ["元気看護師"]},
+    2: {"はい": ["病み看護師"], "いいえ": ["マルチ看護師"]},
+    3: {"はい": ["病み看護師"], "いいえ": ["元気看護師"]},
+    4: {"はい": ["マルチ看護師"], "いいえ": ["元気看護師", "病み看護師"]},
+    5: {"はい": ["元気看護師", "病み看護師"], "いいえ": ["マルチ看護師"]}
+}
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -71,9 +81,13 @@ def ask_question(event, question_index):
                         ])))
 
 def display_result(event, answers):
-    # ここでanswersに基づいて結果を計算します
-    # 結果表示のロジックを実装
-    result_message = "あなたの看護師タイプは: [結果] です。"
+    # 診断結果を計算
+    nurse_types = set()  # 診断結果の看護師タイプを格納するセット
+    for question_index, answer in enumerate(answers):
+        nurse_types.update(question_nurse_type_mapping[question_index][answer])
+    
+    # 診断結果を表示
+    result_message = "あなたの看護師タイプは: {} です。".format(", ".join(nurse_types))
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=result_message))
