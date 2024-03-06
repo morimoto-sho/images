@@ -12,7 +12,6 @@ handler = WebhookHandler('3a6d6100f0621453f5477776424f4cfe')
 mandatory_questions = ["あなたは今転職を考えていますか？", "あなたは今の職場に不満を感じていますか？"]
 additional_questions = [
     "あなたは新しい医療機器をすぐに使いこなせますか？",
-    "あなたは新しい医療機器をすぐに使いこなせますか？",
     "患者さんの心を温かく包み込むことができますか？",
     "どんな厳しい状況でもブレない強さを持っていますか？",
     "新人ナースとの橋渡し役として、知識を惜しみなく共有しますか？",
@@ -63,26 +62,28 @@ def process_answer(user_id, text, reply_token):
     state = user_states[user_id]
     state['answers'].append(text)
     
-    if state['questions'][state['current_question']] in mandatory_questions and text == "はい":
-        display_result(reply_token, "マルチタイプ看護師")
-        del user_states[user_id]
-    else:
+    if state['current_question'] < len(state['questions']) - 1:
         state['current_question'] += 1
-        if state['current_question'] < len(state['questions']):
-            ask_question(reply_token, state['questions'][state['current_question']])
-        else:
-            nurse_type = calculate_nurse_type(state['answers'])
-            display_result(reply_token, nurse_type)
-            del user_states[user_id]
+        ask_question(reply_token, state['questions'][state['current_question']])
+    else:
+        nurse_type = calculate_nurse_type(state['answers'])
+        display_result(reply_token, nurse_type)
+        del user_states[user_id]
 
 def calculate_nurse_type(answers):
-    # ここに看護師タイプを計算するロジックを実装してください
-    return "看護師タイプ"  # 仮の返却値
+    yes_count = answers.count("はい")
+    
+    if yes_count > 5:
+        return "イノベーター看護師"
+    elif 3 <= yes_count <= 5:
+        return "ハートフル看護師"
+    else:
+        return "マルチタイプ看護師"
+
 
 def display_result(reply_token, nurse_type):
     message = f"あなたの看護師タイプは「{nurse_type}」です。"
     line_bot_api.reply_message(reply_token, TextSendMessage(text=message))
 
-if __name__ == "__main__":
+    if __name__ == "__main__":
     app.run()
-
