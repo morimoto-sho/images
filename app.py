@@ -52,7 +52,14 @@ def handle_message(event):
         process_answer(user_id, text, event.reply_token)
 
 def ask_question(reply_token, question):
-    quick_reply_items = [...]
+    quick_reply_items = [
+        QuickReplyButton(action=MessageAction(label="はい", text="はい")),
+        QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ")),
+        QuickReplyButton(action=MessageAction(label="どちらでもない", text="どちらでもない"))
+    ]
+    messages = TextSendMessage(text=question, quick_reply=QuickReply(items=quick_reply_items))
+    line_bot_api.reply_message(reply_token, messages)
+
     messages = TextSendMessage(text=question, quick_reply=QuickReply(items=quick_reply_items))
     line_bot_api.reply_message(reply_token, messages)
 
