@@ -58,6 +58,22 @@ def start_diagnosis(event):
     # Implement logic to start the diagnosis by asking the first question
     pass
 
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    user_message = event.message.text
+    
+    if user_message.lower() == "診断開始":
+        # Start the diagnosis
+        reply_message = "診断を開始します。質問に答えてください。"
+    else:
+        # Fallback message
+        reply_message = "メッセージを受け取りましたが、理解できませんでした。"
+    
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=reply_message)
+    )
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
