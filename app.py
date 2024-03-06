@@ -7,18 +7,27 @@ import random
 
 app = Flask(__name__)
 
+# Your Line Bot API and Webhook Handler keys
 line_bot_api = LineBotApi('9vhVHnOG2ySYldADpiacTQjwz4cEAEJW93dg3g/BCUGE8q4+WoEJfADJ1Oij0S/XDS6+PwaxHY4cCbxQcqcnSA1ragmegQJxcNax8qYXo51CiPPhWrvfzYFmIJAY7Ri9d7BO3uQLQdg/hXtYCq+bFgdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('3a6d6100f0621453f5477776424f4cfe')
 
 mandatory_questions = ["あなたは今転職を考えていますか？", "あなたは今の職場に不満を感じていますか？"]
 additional_questions = [
-    "あなたは新しい医療機器をすぐに使いこなせますか？",
+        "あなたは新しい医療機器をすぐに使いこなせますか？",
+        "患者さんの心を温かく包み込むことができますか？",
+        "どんな厳しい状況でもブレない強さを持っていますか？",
+        "新人ナースとの橋渡し役として、知識を惜しみなく共有しますか？",
+        "常に最新の医療知識を追求していますか？",
+        "長時間のシフト後も、仕事に対する情熱を保っていますか？",
+        "緊急事態に迅速かつ的確に対応できますか？",
+        "どんな状況にも柔軟に対応できますか？",
+        "チームをまとめ、明確なビジョンのもとにリードできますか？",
+        "特定の医療分野や技術において深い知識を持っていますか？",
     # Add other questions here
 ]
 all_questions = mandatory_questions + additional_questions
 user_states = {}
 
-# Existing nurse types and salary mapping
 nurse_types = [
     "マルチタイプ看護師",
     "イノベーター看護師",
@@ -33,40 +42,29 @@ nurse_types = [
     "エキスパート看護師"
 ]
 
-# Update the nurse_types list and salary_map dictionary
-nurse_types.extend(new_nurse_types)
-salary_map.update(new_salaries)
-
-
+# Define any new nurse types or update salaries here (if applicable)
 
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-    
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
-    
     return 'OK'
-
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text
     
-    # Start diagnosis
     if text == "診断開始":
-        # Select 10 random questions, ensuring mandatory questions are included
-        selected_questions = random.sample(questions, 8) + mandatory_questions
-        users_state[user_id] = {'questions': selected_questions, 'answers': []}
-        ask_question(user_id, 0)  # Ask the first question
-    
-    # Handle answer and proceed to next question or compute result
+        selected_questions = random.sample(all_questions, 8) + mandatory_questions
+        user_states[user_id] = {'questions': selected_questions, 'answers': [], 'current_question': 0}
+        ask_question(event.reply_token, selected_questions[0])
     elif text in ["はい", "いいえ", "どちらでもない"]:
-        process_answer(user_id, text)
+        process_answer(user_id, text, event.reply_token)
 
 def ask_question(reply_token, question):
     quick_reply_items = [
@@ -80,21 +78,17 @@ def ask_question(reply_token, question):
 def process_answer(user_id, text, reply_token):
     state = user_states[user_id]
     state['answers'].append(text)
-    # Check if the answer qualifies for immediate classification
     if state['questions'][state['current_question']] in mandatory_questions and text == "はい":
-        # Classify as マルチタイプ看護師 and end
         display_result(reply_token, "マルチタイプ看護師")
-        del user_states[user_id]  # Clear user state
+        del user_states[user_id]
     else:
         state['current_question'] += 1
         if state['current_question'] < len(state['questions']):
-            # Ask the next question
             ask_question(reply_token, state['questions'][state['current_question']])
         else:
-            # All questions answered, calculate and display result
             nurse_type = calculate_nurse_type(state['answers'])
             display_result(reply_token, nurse_type)
-            del user_states[user_id]  # Clear user state
+            del user_states[user_id]
 
 def calculate_nurse_type(answers):
     # Implement your logic to calculate the nurse type based on answers
@@ -104,4 +98,5 @@ def display_result(reply_token, nurse_type):
     message = f"あなたの看護師タイプは「{nurse_type}」です。"
     line_bot_api.reply_message(reply_token, TextSendMessage(text=message))
 
-if __name__ == "__main
+if __name__ == "__main__":
+    app.run()
