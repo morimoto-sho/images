@@ -86,8 +86,11 @@ def display_result(event, answers):
     for question_index, answer in enumerate(answers):
         nurse_types.update(question_nurse_type_mapping[question_index][answer])
     
+    # ランダムに１つの看護師タイプを選択
+    selected_nurse_type = random.choice(list(nurse_types))
+    
     # 診断結果を表示
-    result_message = "あなたの看護師タイプは: {} です。".format(", ".join(nurse_types))
+    result_message = "あなたの看護師タイプは: {} です。".format(selected_nurse_type)
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=result_message))
