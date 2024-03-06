@@ -55,9 +55,20 @@ def handle_message(event):
         start_diagnosis(event)
 
 def start_diagnosis(event):
-    # Implement logic to start the diagnosis by asking the first question
-    pass
+    # 最初の質問を設定
+    first_question = "あなたは新しい医療機器をすぐに使いこなせますか？"
 
+    # クイックリプライを設定
+    quick_reply = QuickReply(items=[
+        QuickReplyButton(action=MessageAction(label="はい", text="はい")),
+        QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
+    ])
+
+    # ユーザーに質問を送信
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=first_question, quick_reply=quick_reply)
+    )
 
 
 if __name__ == "__main__":
