@@ -104,19 +104,27 @@ def ask_question(event, question_index):
                         ])))
 
 def display_result(event, answers):
-    # 診断結果を計算
-    nurse_types = set()  # 診断結果の看護師タイプを格納するセット
-    for question_index, answer in enumerate(answers):
-        nurse_types.update(question_nurse_type_mapping[question_index][answer])
+    # 各MBTIタイプのスコアを計算
+    mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
     
-    # ランダムに１つの看護師タイプを選択
-    selected_nurse_type = random.choice(list(nurse_types))
+    for question_index, answer in enumerate(answers):
+        if answer == "はい":
+            for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
+                mbti_scores[mbti] += score
+
+    # 最も高いスコアのMBTIタイプを見つける
+    highest_score = max(mbti_scores.values())
+    top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
+
+    # ランダムに1つのMBTIタイプを選択（複数のタイプが最高スコアの場合）
+    selected_mbti_type = random.choice(top_mbti_types)
     
     # 診断結果を表示
-    result_message = "あなたの看護師タイプは: {} です。".format(selected_nurse_type)
+    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。"
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=result_message))
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
