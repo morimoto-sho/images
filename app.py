@@ -62,15 +62,18 @@ question_nurse_type_mapping = {
     16: {"はい": {"ENTP": 100}}  # 組織的（判断）
 }
 
+
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+    app.logger.info(f"Request body: {body}")  # ログ出力を追加
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
+        app.logger.error("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
     return 'OK'
 
