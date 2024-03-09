@@ -121,16 +121,28 @@ def display_result(reply_token, answers):
             for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
                 mbti_scores[mbti] += score
 
+    # Find the MBTI type(s) with the highest score
     highest_score = max(mbti_scores.values())
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
+
+    # Select one MBTI type randomly if there are multiple types with the highest score
     selected_mbti_type = random.choice(top_mbti_types)
     
+    # Display the diagnostic result
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。"
-    logging.info(f"Displaying result message: {result_message}")
-    
+    logging.info(f"Sending result message: {result_message}")
+
+    # Use the reply_token correctly
     line_bot_api.reply_message(
         reply_token,
         TextSendMessage(text=result_message))
+
+try:
+    line_bot_api.reply_message(reply_token, TextSendMessage(text=result_message))
+except Exception as e:
+    logging.error(f"Error sending message: {e}")
+
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
