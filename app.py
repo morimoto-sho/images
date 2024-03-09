@@ -26,14 +26,12 @@ questions = [
     "チームワークを大切にしますか？",
     "他人の立場や感情を理解するのが得意ですか？",
     "夢や目標を持っていますか？",
-    "患者さんの希望やニーズを優先しますか？",
     "プレッシャーの中でも冷静に対応できますか？",
     "計画を立てて目標に向かって頑張ることが得意ですか？",
     "新しい場面や状況に柔軟に対応できますか？",
     "人々との関係を楽しむことが多いですか？",
     "変化を楽しみますか？",
     "自分の強みや弱みを理解していますか？",
-    "他人を励ますことが好きですか？",
     "規則や手続きを重視しますか？",
     "自分の感情や考えを明確に述べることが得意ですか？",
     "物事を組織的に進めるのが好きですか？",
@@ -48,18 +46,16 @@ question_nurse_type_mapping = {
     2: {"はい": {"ESFJ": 2, "ISFJ": 2, "ENFJ": 2, "INFJ": 2, "ESTJ": 1, "ISTJ": 1}},  # チームワーク（感情）
     3: {"はい": {"INFJ": 2, "INFP": 2, "ENFJ": 2, "ENFP": 2, "ISFJ": 1, "ISFP": 1}},  # 他人の感情理解（感情）
     4: {"はい": {"INTJ": 2, "ENTJ": 2, "INFJ": 1, "ENFJ": 1}},  # 目標志向（直感＋判断）
-    5: {"はい": {"ISFJ": 2, "ESFJ": 2, "ISFP": 2, "ESFP": 2, "INFJ": 1, "ENFJ": 1}},  # 患者中心（感情）
-    6: {"はい": {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2}},  # 冷静さ（思考）
-    7: {"はい": {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2}},  # 計画性（判断）
-    8: {"はい": {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2}},  # 柔軟性（知覚）
-    9: {"はい": {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2}},  # 社交性（外向性）
-    10: {"はい": {"ENTP": 2, "INTP": 2, "ENFP": 2, "INFP": 2}},  # 変化を楽しむ（知覚）
-    11: {"はい": {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1}},  # 自己認識（内向性）
-    12: {"はい": {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2}},  # 励ます（感情）
-    13: {"はい": {"ISTJ": 2, "ESTJ": 2, "ISFJ": 1, "ESFJ": 1}},  # 規則重視（判断）
-    14: {"はい": {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1}},  # 明確な表現（思考）
-    15: {"はい": {"ENTP": 20}} , # 組織的（判断）
-    16: {"はい": {"ENTP": 20}} , # 組織的（判断）
+    5: {"はい": {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2}},  # 冷静さ（思考）
+    6: {"はい": {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2}},  # 計画性（判断）
+    7: {"はい": {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2}},  # 柔軟性（知覚）
+    8: {"はい": {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2}},  # 社交性（外向性）
+    9: {"はい": {"ENTP": 2, "INTP": 2, "ENFP": 2, "INFP": 2}},  # 変化を楽しむ（知覚）
+    10: {"はい": {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1}},  # 自己認識（内向性）
+    11: {"はい": {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2}},  # 励ます（感情）
+    12: {"はい": {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1}},  # 明確な表現（思考）
+    13: {"はい": {"ENTP": 20}} , # 組織的（判断）
+    14: {"はい": {"ENTP": 20}} , # 組織的（判断）
 }
 
 
@@ -77,24 +73,39 @@ def callback():
         abort(400)
     return 'OK'
 
-@handler.add(MessageEvent, message=TextMessage)
+
+
+
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text
 
     if text == "診断開始":
-        users_current_question[user_id] = 0
-        users_answers[user_id] = []
-        ask_question(event, 0)
-    elif text in ["はい", "いいえ"]:
-        users_answers[user_id].append(text)
-        next_question_index = users_current_question[user_id] + 1
+        # 診断を開始するための初期化
+        users_current_question[user_id] = 0  # 現在の質問番号を0に
+        users_answers[user_id] = []  # ユーザーの回答を保存するリストを初期化
+        ask_question(event.reply_token, questions[0])  # 最初の質問を送信
+    elif user_id in users_current_question:
+        # ユーザーからの回答を処理
+        users_answers[user_id].append(text)  # ユーザーの回答を保存
+        next_question_index = users_current_question[user_id] + 1  # 次の質問のインデックス
+        
+        # まだ質問が残っていれば、次の質問を送信
         if next_question_index < len(questions):
-            users_current_question[user_id] = next_question_index
-            ask_question(event, next_question_index)
+            users_current_question[user_id] = next_question_index  # 質問番号を更新
+            ask_question(event.reply_token, questions[next_question_index])
         else:
-            # 診断結果を表示
-            display_result(event, users_answers[user_id])
+            # すべての質問に回答した後、診断結果を表示
+            display_result(event.reply_token, users_answers[user_id])
+            # 診断終了後、ユーザーの状態をクリーンアップ
+            del users_current_question[user_id]
+            del users_answers[user_id]
+    else:
+        # 不明なテキストが送られた場合の処理（オプション）
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="「診断開始」と送信してください。")
+        )
 
 def ask_question(event, question_index):
     question = questions[question_index]
