@@ -88,7 +88,7 @@ def process_answer(user_id, text, reply_token):
         del users_current_question[user_id]
         del users_answers[user_id]
 
-def display_result(reply_token, answers, user_id):
+def display_result(reply_token, answers):
     # 各MBTIタイプのスコアを計算
     mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
     
@@ -104,16 +104,8 @@ def display_result(reply_token, answers, user_id):
     # 診断結果を表示し、ユーザーにタイプを送信させる
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。\nこのタイプをメッセージとして送信してください。"
     
-    line_bot_api.reply_message(
-        reply_token,
-        TextSendMessage(text=result_message)
-    )
-
-try:
-        line_bot_api.reply_message(
-            reply_token,
-            TextSendMessage(text=result_message)
-        )
+    try:
+        line_bot_api.reply_message(reply_token, TextSendMessage(text=result_message))
     except Exception as e:
         logging.error(f"Error sending message: {e}")
 
