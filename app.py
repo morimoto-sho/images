@@ -1,5 +1,6 @@
 import os
 import random
+import logging
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
@@ -96,6 +97,8 @@ def ask_question(reply_token, question_index):
                             QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
                         ])))
 
+logging.basicConfig(level=logging.INFO)
+
 def process_answer(user_id, text, reply_token):
     users_answers[user_id].append(text)
     next_question_index = users_current_question[user_id] + 1
@@ -103,7 +106,9 @@ def process_answer(user_id, text, reply_token):
         users_current_question[user_id] = next_question_index
         ask_question(reply_token, next_question_index)
     else:
+        logging.info(f"All questions answered by user {user_id}. Displaying results.")
         display_result(reply_token, users_answers[user_id])
+        # Clean up user state after displaying results
         del users_current_question[user_id]
         del users_answers[user_id]
 
@@ -116,19 +121,16 @@ def display_result(reply_token, answers):
             for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
                 mbti_scores[mbti] += score
 
-    # Find the MBTI type(s) with the highest score
     highest_score = max(mbti_scores.values())
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
-
-    # Select one MBTI type randomly if there are multiple types with the highest score
     selected_mbti_type = random.choice(top_mbti_types)
     
-    # Display the diagnostic result
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。"
+    logging.info(f"Displaying result message: {result_message}")
+    
     line_bot_api.reply_message(
         reply_token,
         TextSendMessage(text=result_message))
-
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
