@@ -74,48 +74,38 @@ def callback():
     return 'OK'
 
 
-
-
+@handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text
 
     if text == "診断開始":
-        # 診断を開始するための初期化
-        users_current_question[user_id] = 0  # 現在の質問番号を0に
-        users_answers[user_id] = []  # ユーザーの回答を保存するリストを初期化
-        ask_question(event.reply_token, questions[0])  # 最初の質問を送信
-    elif user_id in users_current_question:
-        # ユーザーからの回答を処理
-        users_answers[user_id].append(text)  # ユーザーの回答を保存
-        next_question_index = users_current_question[user_id] + 1  # 次の質問のインデックス
-        
-        # まだ質問が残っていれば、次の質問を送信
-        if next_question_index < len(questions):
-            users_current_question[user_id] = next_question_index  # 質問番号を更新
-            ask_question(event.reply_token, questions[next_question_index])
-        else:
-            # すべての質問に回答した後、診断結果を表示
-            display_result(event.reply_token, users_answers[user_id])
-            # 診断終了後、ユーザーの状態をクリーンアップ
-            del users_current_question[user_id]
-            del users_answers[user_id]
-    else:
-        # 不明なテキストが送られた場合の処理（オプション）
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="「診断開始」と送信してください。")
-        )
+        users_current_question[user_id] = 0
+        users_answers[user_id] = []
+        ask_question(event.reply_token, 0)
+    elif text in ["はい", "いいえ"] and user_id in users_current_question:
+        process_answer(user_id, text, event.reply_token)
 
-def ask_question(event, question_index):
+def ask_question(reply_token, question_index):
     question = questions[question_index]
     line_bot_api.reply_message(
-        event.reply_token,
+        reply_token,
         TextSendMessage(text=question,
                         quick_reply=QuickReply(items=[
                             QuickReplyButton(action=MessageAction(label="はい", text="はい")),
                             QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
                         ])))
+
+def process_answer(user_id, text, reply_token):
+    users_answers[user_id].append(text)
+    next_question_index = users_current_question[user_id] + 1
+    if next_question_index < len(questions):
+        users_current_question[user_id] = next_question_index
+        ask_question(reply_token, next_question_index)
+    else:
+        display_result(reply_token, users_answers[user_id])
+        del users_current_question[user_id]
+        del users_answers[user_id]
 
 def display_result(event, answers):
     # 各MBTIタイプのスコアを計算
