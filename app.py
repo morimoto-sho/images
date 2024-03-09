@@ -14,6 +14,7 @@ from linebot.models import (
 
 app = Flask(__name__)
 
+
 line_bot_api = LineBotApi('9vhVHnOG2ySYldADpiacTQjwz4cEAEJW93dg3g/BCUGE8q4+WoEJfADJ1Oij0S/XDS6+PwaxHY4cCbxQcqcnSA1ragmegQJxcNax8qYXo51CiPPhWrvfzYFmIJAY7Ri9d7BO3uQLQdg/hXtYCq+bFgdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('3a6d6100f0621453f5477776424f4cfe')
 
@@ -109,11 +110,12 @@ def display_result(reply_token, answers, user_id):
     )
 
 try:
-    line_bot_api.reply_message(reply_token, TextSendMessage(text=result_message))
-except Exception as e:
-    logging.error(f"Error sending message: {e}")
-
-
+        line_bot_api.reply_message(
+            reply_token,
+            TextSendMessage(text=result_message)
+        )
+    except Exception as e:
+        logging.error(f"Error sending message: {e}")
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
