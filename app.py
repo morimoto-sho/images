@@ -107,8 +107,8 @@ def process_answer(user_id, text, reply_token):
         del users_current_question[user_id]
         del users_answers[user_id]
 
-def display_result(event, answers):
-    # 各MBTIタイプのスコアを計算
+def display_result(reply_token, answers):
+    # Calculate scores for each MBTI type based on answers
     mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
     
     for question_index, answer in enumerate(answers):
@@ -116,17 +116,17 @@ def display_result(event, answers):
             for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
                 mbti_scores[mbti] += score
 
-    # 最も高いスコアのMBTIタイプを見つける
+    # Find the MBTI type(s) with the highest score
     highest_score = max(mbti_scores.values())
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
 
-    # ランダムに1つのMBTIタイプを選択（複数のタイプが最高スコアの場合）
+    # Select one MBTI type randomly if there are multiple types with the highest score
     selected_mbti_type = random.choice(top_mbti_types)
     
-    # 診断結果を表示
+    # Display the diagnostic result
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。"
     line_bot_api.reply_message(
-        event.reply_token,
+        reply_token,
         TextSendMessage(text=result_message))
 
 
