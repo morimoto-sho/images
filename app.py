@@ -87,8 +87,8 @@ def process_answer(user_id, text, reply_token):
         del users_current_question[user_id]
         del users_answers[user_id]
 
-def display_result(reply_token, answers):
-    # Calculate scores for each MBTI type based on answers
+def display_result(reply_token, answers, user_id):
+    # 各MBTIタイプのスコアを計算
     mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
     
     for question_index, answer in enumerate(answers):
@@ -96,21 +96,17 @@ def display_result(reply_token, answers):
             for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
                 mbti_scores[mbti] += score
 
-    # Find the MBTI type(s) with the highest score
     highest_score = max(mbti_scores.values())
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
-
-    # Select one MBTI type randomly if there are multiple types with the highest score
     selected_mbti_type = random.choice(top_mbti_types)
     
-    # Display the diagnostic result
-    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。"
-    logging.info(f"Sending result message: {result_message}")
-
-    # Use the reply_token correctly
+    # 診断結果を表示し、ユーザーにタイプを送信させる
+    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。\nこのタイプをメッセージとして送信してください。"
+    
     line_bot_api.reply_message(
         reply_token,
-        TextSendMessage(text=result_message))
+        TextSendMessage(text=result_message)
+    )
 
 try:
     line_bot_api.reply_message(reply_token, TextSendMessage(text=result_message))
