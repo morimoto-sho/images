@@ -38,25 +38,25 @@ question_nurse_type_mapping = {
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-    app.logger.info(f"Request body: {body}")  # ログ出力を追加
+    app.logger.info(f"Request body: {body}")
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        app.logger.error("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
     return 'OK'
-
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text
 
+    # 診断開始の処理
     if text == "診断開始":
         users_current_question[user_id] = 0
         users_answers[user_id] = []
         ask_question(event.reply_token, 0)
+    # 回答の処理
     elif text in ["はい", "いいえ"] and user_id in users_current_question:
         process_answer(user_id, text, event.reply_token)
 
@@ -94,7 +94,7 @@ def display_result(reply_token, answers, user_id):
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
     selected_mbti_type = random.choice(top_mbti_types)
 
- # 診断結果をユーザーが送信できるようにクイックリプライを設定
+    # 診断結果をユーザーが送信できるようにクイックリプライを設定
     quick_reply_buttons = QuickReply(items=[
         QuickReplyButton(action=MessageAction(label="結果を見る", text=selected_mbti_type))
     ])
@@ -102,11 +102,10 @@ def display_result(reply_token, answers, user_id):
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
 
     line_bot_api.reply_message(
-       
-    reply_token,
-    TextSendMessage(text=result_message, quick_reply=quick_reply_buttons)
-)
+        reply_token,
+        TextSendMessage(text=result_message, quick_reply=quick_reply_buttons)
+    )
 
-if name == "main":
-port = int(os.getenv("PORT", 5000))
-app.run(host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
