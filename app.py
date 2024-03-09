@@ -1,18 +1,18 @@
 import os
+import random
 import logging
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
 )
 from linebot.exceptions import (
-    InvalidSignatureError, LineBotApiError
+    InvalidSignatureError
 )
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 )
 
 app = Flask(__name__)
-
 
 line_bot_api = LineBotApi('9vhVHnOG2ySYldADpiacTQjwz4cEAEJW93dg3g/BCUGE8q4+WoEJfADJ1Oij0S/XDS6+PwaxHY4cCbxQcqcnSA1ragmegQJxcNax8qYXo51CiPPhWrvfzYFmIJAY7Ri9d7BO3uQLQdg/hXtYCq+bFgdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('3a6d6100f0621453f5477776424f4cfe')
@@ -35,26 +35,25 @@ question_nurse_type_mapping = {
 }
 
 
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-    app.logger.info(f"Request body: {body}")
+    app.logger.info(f"Request body: {body}")  # ログ出力を追加
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
         app.logger.error("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
-    except LineBotApiError as e:
-        app.logger.error(f"API error: {e}")
-        abort(500)
     return 'OK'
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
-    text = event.message.text.strip()
+    text = event.message.text
 
     if text == "診断開始":
         users_current_question[user_id] = 0
@@ -62,17 +61,9 @@ def handle_message(event):
         ask_question(event.reply_token, 0)
     elif text in ["はい", "いいえ"] and user_id in users_current_question:
         process_answer(user_id, text, event.reply_token)
-    else:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="「診断開始」と入力してください。")
-        )
-
 
 def ask_question(reply_token, question_index):
-    # 指定された質問インデックスに対応する質問を取得
     question = questions[question_index]
-    # ユーザーに質問を送信
     line_bot_api.reply_message(
         reply_token,
         TextSendMessage(text=question,
@@ -81,6 +72,7 @@ def ask_question(reply_token, question_index):
                             QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
                         ])))
 
+logging.basicConfig(level=logging.INFO)
 
 def process_answer(user_id, text, reply_token):
     users_answers[user_id].append(text)
@@ -96,57 +88,25 @@ def process_answer(user_id, text, reply_token):
         del users_answers[user_id]
 
 def display_result(reply_token, answers):
-    # 計算ロジックに基づく結果を想定
-    selected_mbti_type = "ENTP"  # これは例です
+    # Calculate scores for each MBTI type based on answers
+    mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
+    
+    for question_index, answer in enumerate(answers):
+        if answer == "はい":
+            for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
+                mbti_scores[mbti] += score
 
-    # 診断結果の説明とクイックリプライのボタンを組み合わせたメッセージ
-    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。\n結果を見るには、以下のボタンを押してください。"
-
-    # クイックリプライボタンを作成
-    quick_reply_buttons = QuickReply(items=[
-        QuickReplyButton(action=MessageAction(label="結果を見る", text=selected_mbti_type))
-    ])
-
-    # ユーザーにメッセージを送信
+    highest_score = max(mbti_scores.values())
+    top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
+    selected_mbti_type = random.choice(top_mbti_types)
+    
+    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。"
+    logging.info(f"Displaying result message: {result_message}")
+    
     line_bot_api.reply_message(
         reply_token,
-        TextSendMessage(text=result_message, quick_reply=quick_reply_buttons)
-    )
-
-logging.basicConfig(level=logging.INFO)
+        TextSendMessage(text=result_message))
 
 if __name__ == "__main__":
-    app.run(debug=True)  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
