@@ -1,16 +1,14 @@
-import os
-import random
-import logging
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
 )
-from linebot.exceptions import (
-    InvalidSignatureError
-)
+from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 )
+import os
+import random
+import logging
 
 app = Flask(__name__)
 
@@ -66,13 +64,14 @@ def ask_question(reply_token, question_index):
     question = questions[question_index]
     line_bot_api.reply_message(
         reply_token,
-        TextSendMessage(text=question,
-                        quick_reply=QuickReply(items=[
-                            QuickReplyButton(action=MessageAction(label="はい", text="はい")),
-                            QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
-                        ])))
-
-logging.basicConfig(level=logging.INFO)
+        TextSendMessage(
+            text=question,
+            quick_reply=QuickReply(items=[
+                QuickReplyButton(action=MessageAction(label="はい", text="はい")),
+                QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
+            ])
+        )
+    )
 
 def process_answer(user_id, text, reply_token):
     users_answers[user_id].append(text)
@@ -81,14 +80,9 @@ def process_answer(user_id, text, reply_token):
         users_current_question[user_id] = next_question_index
         ask_question(reply_token, next_question_index)
     else:
-        logging.info(f"All questions answered by user {user_id}. Displaying results.")
-        display_result(reply_token, users_answers[user_id])
-        # Clean up user state after displaying results
-        del users_current_question[user_id]
-        del users_answers[user_id]
+        display_result(reply_token, users_answers[user_id], user_id)
 
-def display_result(reply_token, answers):
-    # Calculate scores for each MBTI type based on answers
+def display_result(reply_token, answers, user_id):
     mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
     
     for question_index, answer in enumerate(answers):
@@ -99,14 +93,20 @@ def display_result(reply_token, answers):
     highest_score = max(mbti_scores.values())
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
     selected_mbti_type = random.choice(top_mbti_types)
-    
-    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。"
-    logging.info(f"Displaying result message: {result_message}")
-    
-    line_bot_api.reply_message(
-        reply_token,
-        TextSendMessage(text=result_message))
 
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+ # 診断結果をユーザーが送信できるようにクイックリプライを設定
+    quick_reply_buttons = QuickReply(items=[
+        QuickReplyButton(action=MessageAction(label="結果を見る", text=selected_mbti_type))
+    ])
+
+    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
+
+    line_bot_api.reply_message(
+       
+    reply_token,
+    TextSendMessage(text=result_message, quick_reply=quick_reply_buttons)
+)
+
+if name == "main":
+port = int(os.getenv("PORT", 5000))
+app.run(host="0.0.0.0", port=port)
