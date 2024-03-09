@@ -70,6 +70,18 @@ def handle_message(event):
             TextSendMessage(text="「診断開始」と入力してください。")
         )
 
+def ask_question(reply_token, question_index):
+    # 指定された質問インデックスに対応する質問を取得
+    question = questions[question_index]
+    # ユーザーに質問を送信
+    line_bot_api.reply_message(
+        reply_token,
+        TextSendMessage(text=question,
+                        quick_reply=QuickReply(items=[
+                            QuickReplyButton(action=MessageAction(label="はい", text="はい")),
+                            QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
+                        ])))
+
 
 def process_answer(user_id, text, reply_token):
     users_answers[user_id].append(text)
