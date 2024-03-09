@@ -1,12 +1,11 @@
 import os
-import random
 import logging
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
 )
 from linebot.exceptions import (
-    InvalidSignatureError
+    InvalidSignatureError, LineBotApiError
 )
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
@@ -36,7 +35,6 @@ question_nurse_type_mapping = {
 }
 
 
-
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -56,7 +54,7 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
-    text = event.message.text.strip()  # 入力テキストの前後の空白を削除
+    text = event.message.text.strip()
 
     if text == "診断開始":
         users_current_question[user_id] = 0
@@ -69,6 +67,7 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text="「診断開始」と入力してください。")
         )
+
 
 def ask_question(reply_token, question_index):
     # 指定された質問インデックスに対応する質問を取得
@@ -117,7 +116,7 @@ def display_result(reply_token, answers):
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)  
 
 
 
