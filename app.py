@@ -41,20 +41,22 @@ question_nurse_type_mapping = {
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-    app.logger.info(f"Request body: {body}")  # ログ出力を追加
+    app.logger.info(f"Request body: {body}")
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
         app.logger.error("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
+    except LineBotApiError as e:
+        app.logger.error(f"API error: {e}")
+        abort(500)
     return 'OK'
-
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
-    text = event.message.text
+    text = event.message.text.strip()  # 入力テキストの前後の空白を削除
 
     if text == "診断開始":
         users_current_question[user_id] = 0
@@ -62,18 +64,12 @@ def handle_message(event):
         ask_question(event.reply_token, 0)
     elif text in ["はい", "いいえ"] and user_id in users_current_question:
         process_answer(user_id, text, event.reply_token)
+    else:
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="「診断開始」と入力してください。")
+        )
 
-def ask_question(reply_token, question_index):
-    question = questions[question_index]
-    line_bot_api.reply_message(
-        reply_token,
-        TextSendMessage(text=question,
-                        quick_reply=QuickReply(items=[
-                            QuickReplyButton(action=MessageAction(label="はい", text="はい")),
-                            QuickReplyButton(action=MessageAction(label="いいえ", text="いいえ"))
-                        ])))
-
-logging.basicConfig(level=logging.INFO)
 
 def process_answer(user_id, text, reply_token):
     users_answers[user_id].append(text)
@@ -105,3 +101,41 @@ def display_result(reply_token, answers):
         reply_token,
         TextSendMessage(text=result_message, quick_reply=quick_reply_buttons)
     )
+
+logging.basicConfig(level=logging.INFO)
+
+if __name__ == "__main__":
+    app.run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
