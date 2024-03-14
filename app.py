@@ -110,28 +110,33 @@ def process_answer(user_id, text, reply_token):
         display_result(reply_token, users_answers[user_id], user_id)
 
 def display_result(reply_token, answers, user_id):
+    # MBTIスコアを初期化
     mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
     
+    # ユーザーの回答に基づいてスコアを計算
     for question_index, answer in enumerate(answers):
         if answer == "はい":
             for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
                 mbti_scores[mbti] += score
 
+    # 最高得点を計算
     highest_score = max(mbti_scores.values())
+    
+    # 最高得点を持つMBTIタイプを選出
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
+    
+    # 結果をランダムに選出してユーザーに表示
     selected_mbti_type = random.choice(top_mbti_types)
-
-    # 診断結果をユーザーが送信できるようにクイックリプライを設定
-    quick_reply_buttons = QuickReply(items=[
-        QuickReplyButton(action=MessageAction(label="結果を見る", text=selected_mbti_type))
-    ])
-
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
-
+    
+    # 結果をユーザーに送信
     line_bot_api.reply_message(
         reply_token,
-        TextSendMessage(text=result_message, quick_reply=quick_reply_buttons)
+        TextSendMessage(text=result_message, quick_reply=QuickReply(items=[
+            QuickReplyButton(action=MessageAction(label="結果を見る", text=selected_mbti_type))
+        ]))
     )
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
