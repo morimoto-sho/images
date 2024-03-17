@@ -51,6 +51,7 @@ question_nurse_type_mapping = {
     8: {"はい": {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2}},  # 励ます（感情）
     9: {"はい": {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1}},  # 明確な表現（思考）
     10: {"はい": {"ENTP": 2, "INTJ": 1,"INFJ": 1, "ISFJ": 1}}, # 組織的（判断）
+    11: {"はい": {"ENTP": 2, "INTJ": 1,"INFJ": 1, "ISFJ": 1}}, # 組織的（判断）
 }
 
 
