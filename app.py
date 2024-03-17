@@ -46,7 +46,7 @@ question_nurse_type_mapping = {
     1: {"はい": {"ENTP": 2, "INTP": 2, "ENTJ": 2, "INTJ": 2, "ENFP": 1, "INFP": 1}},  # 新しい技術（直感）
     2: {"はい": {"INFJ": 2, "INFP": 2, "ENFJ": 2, "ENFP": 2, "ISFJ": 1, "ISFP": 1}},  # 他人の感情理解（感情）
     3: {"はい": {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2}},  # 冷静さ（思考）
-    4: {"はい": {"ENTP": 5, "ESTJ": 2}},
+    4: {"はい": {"ENTP": 5, "ESTJ": 1, "ISTJ": 1, "ESTJ": 1}},
     5: {"はい": {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2}},  # 計画性（判断）
     6: {"はい": {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2}},  # 柔軟性（知覚）
     7: {"はい": {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2}},  # 社交性（外向性）
@@ -54,7 +54,7 @@ question_nurse_type_mapping = {
     9: {"はい": {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1}},  # 自己認識（内向性）
     10: {"はい": {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2}},  # 励ます（感情）
     11: {"はい": {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1}},  # 明確な表現（思考）
-    12: {"はい": {"ENTP": 2,  "INTJ": 2}}, # 組織的（判断）
+    12: {"はい": {"ENTP": 5, "INTJ": 1,"INFJ": 1, "ISFJ": 1}}, # 組織的（判断）
 }
 
 
