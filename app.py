@@ -45,7 +45,7 @@ question_nurse_type_mapping = {
     2: {"はい": {"ESFJ": 2, "ISFJ": 2, "ENFJ": 2, "INFJ": 2, "ESTJ": 1, "ISTJ": 1}},  # チームワーク（感情）
     3: {"はい": {"INFJ": 2, "INFP": 2, "ENFJ": 2, "ENFP": 2, "ISFJ": 1, "ISFP": 1}},  # 他人の感情理解（感情）
     4: {"はい": {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2}},  # 冷静さ（思考）
-    5: {"はい": {"ENTP": 5, "ESTJ": 2}} ,
+    5: {"はい": {"ENTP": 5, "ESTJ": 2}},
     6: {"はい": {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2}},  # 計画性（判断）
     7: {"はい": {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2}},  # 柔軟性（知覚）
     8: {"はい": {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2}},  # 社交性（外向性）
@@ -53,7 +53,7 @@ question_nurse_type_mapping = {
     10: {"はい": {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1}},  # 自己認識（内向性）
     11: {"はい": {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2}},  # 励ます（感情）
     12: {"はい": {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1}},  # 明確な表現（思考）
-    13: {"はい": {"ENTP": 2,  "INTJ": 2}} , # 組織的（判断）
+    13: {"はい": {"ENTP": 2,  "INTJ": 2}}, # 組織的（判断）
 }
 
 
@@ -107,26 +107,29 @@ def process_answer(user_id, text, reply_token):
         display_result(reply_token, users_answers[user_id], user_id)
 
 def display_result(reply_token, answers, user_id):
-    # MBTIスコアを初期化
     mbti_scores = {mbti: 0 for mbti in ["INFJ", "ISFJ", "ENFJ", "ESFJ", "ISTP", "ESTP", "ISTJ", "ESTJ", "ENFP", "ENTP", "INFP", "INTP", "ISFP", "ESFP", "ENTJ", "INTJ"]}
     
-    # ユーザーの回答に基づいてスコアを計算
     for question_index, answer in enumerate(answers):
         if answer == "はい":
             for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
                 mbti_scores[mbti] += score
 
-    # 最高得点を計算
-    highest_score = max(mbti_scores.values())
-    
-    # 最高得点を持つMBTIタイプを選出
-    top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
-    
-    # 結果をランダムに選出してユーザーに表示
+    # 修正部分: スコアが0より大きいMBTIタイプのみを考慮する
+    filtered_mbti_scores = {mbti: score for mbti, score in mbti_scores.items() if score > 0}
+
+    # すべてのスコアが0の場合、何かしらのデフォルト結果を表示する（またはエラーメッセージを表示）
+    if not filtered_mbti_scores:
+        line_bot_api.reply_message(
+            reply_token,
+            TextSendMessage(text="診断結果を決定できませんでした。もう一度お試しください。")
+        )
+        return
+
+    highest_score = max(filtered_mbti_scores.values())
+    top_mbti_types = [mbti for mbti, score in filtered_mbti_scores.items() if score == highest_score]
     selected_mbti_type = random.choice(top_mbti_types)
-    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
     
-    # 結果をユーザーに送信
+    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
     line_bot_api.reply_message(
         reply_token,
         TextSendMessage(text=result_message, quick_reply=QuickReply(items=[
