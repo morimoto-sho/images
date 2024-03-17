@@ -9,6 +9,9 @@ from linebot.models import (
 import os
 import random
 import logging
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 
@@ -114,19 +117,10 @@ def display_result(reply_token, answers, user_id):
             for mbti, score in question_nurse_type_mapping[question_index]["はい"].items():
                 mbti_scores[mbti] += score
 
-    # 修正部分: スコアが0より大きいMBTIタイプのみを考慮する
-    filtered_mbti_scores = {mbti: score for mbti, score in mbti_scores.items() if score > 0}
+    logging.info("MBTI scores: %s", mbti_scores)
 
-    # すべてのスコアが0の場合、何かしらのデフォルト結果を表示する（またはエラーメッセージを表示）
-    if not filtered_mbti_scores:
-        line_bot_api.reply_message(
-            reply_token,
-            TextSendMessage(text="診断結果を決定できませんでした。もう一度お試しください。")
-        )
-        return
-
-    highest_score = max(filtered_mbti_scores.values())
-    top_mbti_types = [mbti for mbti, score in filtered_mbti_scores.items() if score == highest_score]
+    highest_score = max(mbti_scores.values())
+    top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
     selected_mbti_type = random.choice(top_mbti_types)
     
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
@@ -136,6 +130,7 @@ def display_result(reply_token, answers, user_id):
             QuickReplyButton(action=MessageAction(label="結果を見る", text=selected_mbti_type))
         ]))
     )
+
 
 
 if __name__ == "__main__":
