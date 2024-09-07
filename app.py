@@ -114,7 +114,7 @@ def display_result(reply_token, answers, user_id):
 
     if not any(score > 0 for score in mbti_scores.values()):
         result_message = "診断結果を決定できませんでした。もう一度お試しください。"
-        quick_reply_items = [QuickReplyButton(action=MessageAction(label="再試行", text="診断開始"))]
+        quick_reply_items = [QuickReplyButton(action=MessageAction(label="再試行", text="診断開始(少しお待ちください)"))]
     else:
         highest_score = max(mbti_scores.values())
         top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
