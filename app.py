@@ -74,7 +74,7 @@ def handle_message(event):
     text = event.message.text
 
     # 診断開始の処理
-    if text == "診断開始(少しお待ちください)":
+    if text == "診断開始":
         users_current_question[user_id] = 0
         users_answers[user_id] = []
         ask_question(event.reply_token, 0)
