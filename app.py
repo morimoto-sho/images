@@ -37,10 +37,10 @@ question_nurse_type_mapping = {
     0: {"INFJ": 2, "ISFJ": 2, "ENFJ": 2, "ESFJ": 2, "INFP": 2, "ISFP": 2, "ENFP": 1, "ESFP": 1},  # 感情に敏感
     1: {"ENTP": 2, "INTP": 2, "ENTJ": 2, "INTJ": 2, "ENFP": 1, "INFP": 1},  # 新しい技術
     2: {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2},  # 冷静さ
-    3: {"ENTP": 10, "ESTJ": 1, "ISTJ": 1, "ESTJ": 1},
+    3: {"ENTP": 5, "ESTJ": 1, "ISTJ": 1, "ESTJ": 1},
     4: {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2},  # 計画性
     5: {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2},  # 柔軟性
-    6: {"ESFP": 10, "ISFP": 2, "ENFP": 2, "INFP": 2},  # 社交性
+    6: {"ESFP": 5, "ISFP": 2, "ENFP": 2, "INFP": 2},  # 社交性
     7: {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1},  # 自己認識
     8: {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2},  # 励ます
     9: {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1},  # 明確な表現
