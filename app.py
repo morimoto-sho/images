@@ -103,6 +103,12 @@ def display_result(reply_token, answers, user_id):
                 mbti_scores[mbti] += score
 
     highest_score = max(mbti_scores.values())
+    
+    # 合計スコアがゼロの場合に対応
+    if highest_score == 0:
+        line_bot_api.reply_message(reply_token, TextSendMessage(text="診断結果が生成できませんでした。もう一度お試しください。"))
+        return
+
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
     
     if not top_mbti_types:
