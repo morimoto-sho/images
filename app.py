@@ -37,14 +37,14 @@ question_nurse_type_mapping = {
     0: {"INFJ": 2, "ISFJ": 2, "ENFJ": 2, "ESFJ": 2, "INFP": 2, "ISFP": 2, "ENFP": 1, "ESFP": 1},  # 感情に敏感
     1: {"ENTP": 2, "INTP": 2, "ENTJ": 2, "INTJ": 2, "ENFP": 1, "INFP": 1},  # 新しい技術
     2: {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2},  # 冷静さ
-    3: {"ENTP": 5, "ESTJ": 1, "ISTJ": 1, "ESTJ": 1},
+    3: {"ENTP": 5, "ESTJ": 1, "ISTJ": 1, "ESTJ": 1},  # 転職
     4: {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2},  # 計画性
     5: {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2},  # 柔軟性
     6: {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2},  # 社交性
     7: {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1},  # 自己認識
-    8: {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2},  # 励ます
-    9: {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1},  # 明確な表現
-    10: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 組織的
+    8: {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2},  # 規則
+    9: {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1},  # 明確さ
+    10: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 組織
     11: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 不満
 }
 
@@ -104,13 +104,15 @@ def display_result(reply_token, answers, user_id):
 
     highest_score = max(mbti_scores.values())
     
-    # 合計スコアがゼロの場合に対応
+    # 合計スコアがゼロの場合の処理を追加
     if highest_score == 0:
         line_bot_api.reply_message(reply_token, TextSendMessage(text="診断結果が生成できませんでした。もう一度お試しください。"))
         return
 
+    # スコアが最大のMBTIタイプを選択
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
     
+    # 結果が出ない場合のチェックを追加
     if not top_mbti_types:
         line_bot_api.reply_message(reply_token, TextSendMessage(text="診断結果が生成できませんでした。もう一度お試しください。"))
         return
