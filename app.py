@@ -95,8 +95,14 @@ def process_answer(user_id, text, reply_token):
         display_result(reply_token, users_answers[user_id], user_id)
 
 def display_result(reply_token, answers, user_id):
-    mbti_scores = {mbti: 0 for mbti in question_nurse_type_mapping[0].keys()}
+    # 全質問に対応するMBTIタイプを一括で取得し、初期化
+    all_mbti_types = set()
+    for mapping in question_nurse_type_mapping.values():
+        all_mbti_types.update(mapping.keys())
+
+    mbti_scores = {mbti: 0 for mbti in all_mbti_types}  # 全てのMBTIタイプを初期化
     
+    # 各質問の回答に基づいてスコアを加算
     for question_index, answer in enumerate(answers):
         if answer == "はい":
             for mbti, score in question_nurse_type_mapping[question_index].items():
