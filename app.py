@@ -24,7 +24,7 @@ questions = [
     "あなたは今転職を考えていますか？",
     "計画を立てて目標に向かって頑張ることが得意ですか？",
     "新しい場面や状況に柔軟に対応できますか？",
-    "異性とので出会いを求めていますか？",
+    "異性との出会いを求めていますか？",
     "自分の強みや弱みを理解していますか？",
     "規則や手続きを重視しますか？",
     "自分の感情や考えを明確に述べることが得意ですか？",
@@ -45,7 +45,7 @@ question_nurse_type_mapping = {
     8: {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2},  # 励ます
     9: {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1},  # 明確な表現
     10: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 組織的
-    11: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 組織的
+    11: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 不満
 }
 
 @app.route("/callback", methods=['POST'])
@@ -104,6 +104,11 @@ def display_result(reply_token, answers, user_id):
 
     highest_score = max(mbti_scores.values())
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
+    
+    if not top_mbti_types:
+        line_bot_api.reply_message(reply_token, TextSendMessage(text="診断結果が生成できませんでした。もう一度お試しください。"))
+        return
+
     selected_mbti_type = random.choice(top_mbti_types)
     result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
 
