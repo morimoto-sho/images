@@ -32,20 +32,20 @@ questions = [
     "あなたは今の職場に不満を感じていますか？",
 ]
 
-# 質問に対応するMBTIタイプと点数
+# 質問に対応するMBTIタイプと点数を調整
 question_nurse_type_mapping = {
-    0: {"INFJ": 2, "ISFJ": 2, "ENFJ": 2, "ESFJ": 2, "INFP": 2, "ISFP": 2, "ENFP": 1, "ESFP": 1},  # 感情に敏感
-    1: {"ENTP": 2, "INTP": 2, "ENTJ": 2, "INTJ": 2, "ENFP": 1, "INFP": 1},  # 新しい技術
-    2: {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2},  # 冷静さ
-    3: {"ENTP": 5, "ESTJ": 1, "ISTJ": 1, "ESTJ": 1},  # 転職
-    4: {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2},  # 計画性
-    5: {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2},  # 柔軟性
-    6: {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2},  # 社交性
-    7: {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1},  # 自己認識
-    8: {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2},  # 規則
-    9: {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1},  # 明確さ
-    10: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 組織
-    11: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 不満
+    0: {"INFJ": 2, "ISFJ": 2, "ENFJ": 2, "ESFJ": 2, "INFP": 2, "ISFP": 2, "ENFP": 2, "ESFP": 2},
+    1: {"ENTP": 2, "INTP": 2, "ENTJ": 2, "INTJ": 2, "ENFP": 2, "INFP": 2, "ENTJ": 1, "INTJ": 1},
+    2: {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2, "ISFJ": 2, "INFJ": 1},  
+    3: {"ENTP": 5, "ESTJ": 1, "ISTJ": 1, "INFJ": 2, "INTP": 2},
+    4: {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2, "ISFJ": 1},  
+    5: {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2, "ESFP": 1, "ISFP": 1},  
+    6: {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2},  
+    7: {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1, "ENFP": 1, "ISFP": 1},  
+    8: {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2, "ESTJ": 1, "ISTJ": 1},  
+    9: {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1, "ENFJ": 2, "ESFJ": 1},  
+    10: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1, "ESTJ": 1},  
+    11: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1, "ISFP": 1},  
 }
 
 @app.route("/callback", methods=['POST'])
