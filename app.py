@@ -18,35 +18,35 @@ users_answers = {}  # ユーザーIDをキーとした回答の記録
 
 # 質問リスト
 questions = [
-    "患者さんの意見や感情に敏感ですか？",
-    "新しい方法や技術を積極的に取り入れようとしますか？",
-    "プレッシャーの中でも冷静に対応できますか？",
-    "あなたは今転職を考えていますか？",
-    "計画を立てて目標に向かって頑張ることが得意ですか？",
-    "新しい場面や状況に柔軟に対応できますか？",
-    "異性とので出会いを求めていますか？",
-    "自分の強みや弱みを理解していますか？",
-    "規則や手続きを重視しますか？",
-    "自分の感情や考えを明確に述べることが得意ですか？",
-    "物事を組織的に進めるのが好きですか？",
-    "あなたは今の職場に不満を感じていますか？",
+    "一人で過ごすよりも、多くの人と関わる仕事が好きですか？",
+    "自由で柔軟な職場よりも、明確なルールや指示がある方が働きやすいですか？",
+    "チームでの協力よりも、自分のペースで一人で仕事を進める方が好きですか？",
+    "事実やデータに基づいた判断をする方が得意ですか？",
+    "突発的な変化よりも、事前にしっかり計画された仕事の方が好きですか？",
+    "長期的なキャリア計画を持って、計画的に進めることが好きですか？",
+    "問題を解決する際、まずは詳細な情報や事実を集めますか？",
+    "他人にどう思われるかよりも、合理的な決断を優先しますか？",
+    "スケジュールがきっちり決まっている方が安心できますか？",
+    "転職などを行い新しい環境に身を置きたいですか？"
 ]
 
 # 質問に対応するMBTIタイプと点数
-question_nurse_type_mapping = {
-    0: {"INFJ": 2, "ISFJ": 2, "ENFJ": 2, "ESFJ": 2, "INFP": 2, "ISFP": 2, "ENFP": 1, "ESFP": 1},  # 感情に敏感
-    1: {"ENTP": 2, "INTP": 2, "ENTJ": 2, "INTJ": 2, "ENFP": 1, "INFP": 1},  # 新しい技術
-    2: {"ISTJ": 2, "ESTJ": 2, "INTJ": 2, "ENTJ": 2},  # 冷静さ
-    3: {"ENTP": 5, "ESTJ": 1, "ISTJ": 1, "ESTJ": 1},
-    4: {"INTJ": 2, "ENTJ": 2, "ISTJ": 2, "ESTJ": 2},  # 計画性
-    5: {"ENFP": 2, "INFP": 2, "ENTP": 2, "INTP": 2},  # 柔軟性
-    6: {"ESFP": 2, "ISFP": 2, "ENFP": 2, "INFP": 2},  # 社交性
-    7: {"INTJ": 2, "INFJ": 2, "ISTJ": 1, "ISFJ": 1},  # 自己認識
-    8: {"ENFJ": 2, "ESFJ": 2, "INFJ": 2, "ISFJ": 2},  # 励ます
-    9: {"ENTJ": 2, "INTJ": 2, "ENTP": 1, "INTP": 1},  # 明確な表現
-    10: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 組織的
-    11: {"ENTP": 2, "INTJ": 1, "INFJ": 1, "ISFJ": 1},  # 組織的
+# 質問に対応するMBTIタイプと点数を調整
+# 質問に対応するMBTIタイプと点数を調整
+question_type_mapping = {
+    0: {"INTJ": 3, "ENTP": 2, "ESTP": 1},  # エンジニア
+    1: {"ESFJ": 3, "ENFJ": 2, "ENTP": 1},  # 営業
+    2: {"ISTJ": 3, "ESTJ": 2, "ISFJ": 1},  # 製造
+    3: {"ISFJ": 3, "ESFJ": 2, "INFJ": 1},  # 事務
+    4: {"INTJ": 3, "ENTP": 2, "ESTJ": 1},  # エンジニア
+    5: {"ESFJ": 3, "ENFJ": 2, "ESTJ": 1},  # 営業
+    6: {"ISTJ": 3, "ISFJ": 2, "ESTJ": 1},  # 製造
+    7: {"INFJ": 3, "ISFJ": 2, "ENFJ": 1},  # 事務
+    8: {"ESTP": 3, "ENTJ": 2, "ISTJ": 1},  # エンジニア
+    9: {"ENFJ": 3, "ESFJ": 2, "INTP": 1},  # 営業
 }
+
+
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -105,7 +105,7 @@ def display_result(reply_token, answers, user_id):
     highest_score = max(mbti_scores.values())
     top_mbti_types = [mbti for mbti, score in mbti_scores.items() if score == highest_score]
     selected_mbti_type = random.choice(top_mbti_types)
-    result_message = f"あなたの看護師タイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
+    result_message = f"あなたの職業MBTIタイプは: {selected_mbti_type} です。結果を見るには、以下のボタンを押してください。"
 
     line_bot_api.reply_message(
         reply_token,
